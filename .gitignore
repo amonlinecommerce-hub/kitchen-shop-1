@@ -1,0 +1,17 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# local env + secrets — never commit these (real catalog id + access token live here)
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+data/
