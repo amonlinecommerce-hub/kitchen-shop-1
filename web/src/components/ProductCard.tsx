@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Product } from "../api";
 import { formatMoney } from "../format";
 import { useI18n } from "../i18n";
@@ -10,14 +11,21 @@ interface Props {
 
 export function ProductCard({ product, onOpen, onAdd }: Props) {
   const { t, phrase } = useI18n();
+  const [imgBroken, setImgBroken] = useState(false);
   const soldOut = product.availability === "out of stock";
   const name = phrase(product.name);
+  const showImage = product.imageUrl && !imgBroken;
 
   return (
     <article className="card">
       <button className="card-media" onClick={onOpen} aria-label={`${t("viewProduct")}: ${name}`}>
-        {product.imageUrl ? (
-          <img src={product.imageUrl} alt={name} loading="lazy" />
+        {showImage ? (
+          <img
+            src={product.imageUrl ?? ""}
+            alt={name}
+            loading="lazy"
+            onError={() => setImgBroken(true)}
+          />
         ) : (
           <div className="card-media-empty" />
         )}

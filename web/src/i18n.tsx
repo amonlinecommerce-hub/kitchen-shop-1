@@ -44,7 +44,20 @@ type UiKey =
   | "facebook"
   | "support"
   | "supportMsg"
-  | "footerRights";
+  | "footerRights"
+  | "searchPlaceholder"
+  | "clearSearch"
+  | "sortBy"
+  | "sortFeatured"
+  | "sortPriceAsc"
+  | "sortPriceDesc"
+  | "sortNameAsc"
+  | "priceRange"
+  | "min"
+  | "max"
+  | "results"
+  | "clearFilters"
+  | "noResults";
 
 // Static UI copy. Dynamic catalog text is handled by phrase()/translateBatch.
 const UI: Record<UiKey, Record<Lang, string>> = {
@@ -86,6 +99,19 @@ const UI: Record<UiKey, Record<Lang, string>> = {
     ar: "مرحبًا أونسوق، أحتاج إلى مساعدة.",
   },
   footerRights: { en: "All rights reserved.", ar: "جميع الحقوق محفوظة." },
+  searchPlaceholder: { en: "Search products…", ar: "ابحث عن منتجات…" },
+  clearSearch: { en: "Clear search", ar: "مسح البحث" },
+  sortBy: { en: "Sort", ar: "ترتيب" },
+  sortFeatured: { en: "Featured", ar: "مميّز" },
+  sortPriceAsc: { en: "Price: low to high", ar: "السعر: من الأقل" },
+  sortPriceDesc: { en: "Price: high to low", ar: "السعر: من الأعلى" },
+  sortNameAsc: { en: "Name: A to Z", ar: "الاسم: أ إلى ي" },
+  priceRange: { en: "Price", ar: "السعر" },
+  min: { en: "Min", ar: "الأدنى" },
+  max: { en: "Max", ar: "الأقصى" },
+  results: { en: "results", ar: "نتيجة" },
+  clearFilters: { en: "Clear filters", ar: "مسح عوامل التصفية" },
+  noResults: { en: "No products match your search.", ar: "لا توجد منتجات مطابقة لبحثك." },
 };
 
 interface I18nApi {

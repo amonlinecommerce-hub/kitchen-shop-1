@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchCatalog, fetchConfig, type Catalog, type Product, type ShopConfig } from "./api";
 import { BRAND } from "./brand";
-import { isAllProductsSet, setIcon } from "./setIcons";
 import { useCart } from "./cart";
 import { configureFormatting } from "./format";
 import { useI18n } from "./i18n";
 import { CartDrawer } from "./components/CartDrawer";
+import { CatalogToolbar, type SortKey } from "./components/CatalogToolbar";
+import { hasSetIcon, isAllProductsSet, SetIcon } from "./components/SetIcon";
 import { ProductCard } from "./components/ProductCard";
 import { ProductModal } from "./components/ProductModal";
 import { SiteFooter } from "./components/SiteFooter";
@@ -17,6 +18,9 @@ export function App() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeCollection, setActiveCollection] = useState<string>(ALL);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortKey>("featured");
+  const [price, setPrice] = useState<{ min: string; max: string }>({ min: "", max: "" });
   const [openProduct, setOpenProduct] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
 
@@ -64,11 +68,57 @@ export function App() {
     [catalog],
   );
 
+  const priceBounds = useMemo(() => {
+    const amounts = (catalog?.products ?? [])
+      .map((p) => p.priceAmount)
+      .filter((v): v is number => v != null);
+    return amounts.length
+      ? { min: Math.min(...amounts), max: Math.max(...amounts) }
+      : { min: 0, max: 0 };
+  }, [catalog]);
+
+  const filtersActive =
+    query.trim() !== "" || price.min !== "" || price.max !== "" || sort !== "featured";
+
+  const clearFilters = () => {
+    setQuery("");
+    setPrice({ min: "", max: "" });
+    setSort("featured");
+  };
+
   const visibleProducts = useMemo(() => {
     if (!catalog) return [];
-    if (activeCollection === ALL) return catalog.products;
-    return catalog.products.filter((p) => p.collectionIds.includes(activeCollection));
-  }, [catalog, activeCollection]);
+    let list =
+      activeCollection === ALL
+        ? catalog.products
+        : catalog.products.filter((p) => p.collectionIds.includes(activeCollection));
+
+    const q = query.trim().toLowerCase();
+    if (q) {
+      list = list.filter((p) =>
+        [p.name, p.nameAr, p.brand, p.description, p.descriptionAr]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(q),
+      );
+    }
+
+    const min = price.min === "" ? null : Number(price.min);
+    const max = price.max === "" ? null : Number(price.max);
+    if (min != null && !Number.isNaN(min)) list = list.filter((p) => (p.priceAmount ?? 0) >= min);
+    if (max != null && !Number.isNaN(max))
+      list = list.filter((p) => (p.priceAmount ?? Infinity) <= max);
+
+    if (sort !== "featured") {
+      list = [...list].sort((a, b) => {
+        if (sort === "price-asc") return (a.priceAmount ?? Infinity) - (b.priceAmount ?? Infinity);
+        if (sort === "price-desc") return (b.priceAmount ?? -Infinity) - (a.priceAmount ?? -Infinity);
+        return phrase(a.name).localeCompare(phrase(b.name), lang);
+      });
+    }
+    return list;
+  }, [catalog, activeCollection, query, price, sort, phrase, lang]);
 
   if (error) {
     return (
@@ -134,7 +184,6 @@ export function App() {
             <span className="set-label">{t("all")}</span>
           </button>
           {sets.map((c) => {
-            const icon = setIcon(c.name);
             const label = phrase(c.name);
             return (
               <button
@@ -143,7 +192,7 @@ export function App() {
                 onClick={() => setActiveCollection(c.id)}
               >
                 <span className="set-icon">
-                  {icon ? <img src={icon} alt="" /> : label.charAt(0)}
+                  {hasSetIcon(c.name) ? <SetIcon name={c.name} /> : label.charAt(0)}
                 </span>
                 <span className="set-label">
                   {label}
@@ -155,9 +204,24 @@ export function App() {
         </nav>
       </header>
 
+      <CatalogToolbar
+        query={query}
+        onQuery={setQuery}
+        sort={sort}
+        onSort={setSort}
+        price={price}
+        onPrice={(which, value) => setPrice((prev) => ({ ...prev, [which]: value }))}
+        bounds={priceBounds}
+        resultCount={visibleProducts.length}
+        filtersActive={filtersActive}
+        onClear={clearFilters}
+      />
+
       <main className="catalog">
         {visibleProducts.length === 0 ? (
-          <p className="state">{t("noProducts")}</p>
+          <p className="state">
+            {query.trim() || price.min || price.max ? t("noResults") : t("noProducts")}
+          </p>
         ) : (
           <div className="grid">
             {visibleProducts.map((product) => (

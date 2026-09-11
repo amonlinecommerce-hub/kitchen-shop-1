@@ -16,6 +16,9 @@ export function ProductModal({ product, onClose, onAdd }: Props) {
   );
   const [active, setActive] = useState(0);
   const [qty, setQty] = useState(1);
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+  const activeSrc = images[active];
+  const activeBroken = activeSrc ? brokenImages.has(activeSrc) : true;
   const soldOut = product.availability === "out of stock";
   const name = phrase(product.name);
 
@@ -36,8 +39,12 @@ export function ProductModal({ product, onClose, onAdd }: Props) {
           ×
         </button>
         <div className="modal-media">
-          {images[active] ? (
-            <img src={images[active]} alt={name} />
+          {activeSrc && !activeBroken ? (
+            <img
+              src={activeSrc}
+              alt={name}
+              onError={() => setBrokenImages((prev) => new Set(prev).add(activeSrc))}
+            />
           ) : (
             <div className="card-media-empty" />
           )}
@@ -49,7 +56,7 @@ export function ProductModal({ product, onClose, onAdd }: Props) {
                   className={i === active ? "thumb thumb-active" : "thumb"}
                   onClick={() => setActive(i)}
                 >
-                  <img src={src} alt="" />
+                  <img src={src} alt="" onError={() => setBrokenImages((prev) => new Set(prev).add(src))} />
                 </button>
               ))}
             </div>
