@@ -373,6 +373,33 @@ img {
 }
 
 /* Catalog grid */
+/* Promo video banner between the header and the toolbar */
+.hero {
+  max-width: var(--max);
+  margin: 18px auto 0;
+  padding: 0 24px;
+}
+
+.hero-video {
+  display: block;
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background: var(--footer);
+}
+
+@media (max-width: 640px) {
+  .hero {
+    margin-top: 12px;
+    padding: 0 16px;
+  }
+  .hero-video {
+    max-height: 220px;
+  }
+}
+
 .catalog {
   max-width: var(--max);
   margin: 0 auto;

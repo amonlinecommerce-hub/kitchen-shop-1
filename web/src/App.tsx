@@ -204,6 +204,20 @@ export function App() {
         </nav>
       </header>
 
+      {BRAND.heroVideo && (
+        <section className="hero" aria-label={BRAND.name}>
+          <video
+            className="hero-video"
+            src={BRAND.heroVideo}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          />
+        </section>
+      )}
+
       <CatalogToolbar
         query={query}
         onQuery={setQuery}

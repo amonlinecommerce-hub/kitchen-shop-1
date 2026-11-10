@@ -1,63 +1,89 @@
-# Kitchen Shop
+# Sallatona Onsouq
 
-A single-shop storefront. One Node process serves the built web app **and** the API.
-Shoppers browse collections, add to a cart, and "Buy now" opens WhatsApp with a
-detailed order pre-filled to the shop's business number.
+An online shop that shows products from a **WhatsApp Business / Meta catalog**.
+Shoppers browse, add items to a cart, and press **Buy now** — WhatsApp opens with
+the full order already written, ready to send.
 
-## How it works
+No payments, no accounts, no database to manage. Just a catalog and WhatsApp.
 
-```
-Meta Commerce Catalog  ──(cron sync)──▶  SQLite cache  ──▶  /api/catalog  ──▶  web storefront
-(source of truth,                        (server/data/                          (cart in localStorage)
- collections = product sets)              catalog.sqlite)                             │
-                                                                                     ▼
-                                                                    wa.me/<number>?text=<order>
-```
+## Features
 
-- **Collections** are Meta **product sets** (curated in the WhatsApp Business app).
-- With **no Meta credentials**, the server serves a bundled **mock catalog** so it runs offline.
-- Checkout is **click-to-chat only** — no WhatsApp API, no server-side orders.
+- 🛒 Products and collections loaded automatically from your Meta catalog
+- 🔎 Search, sort, and filter by price
+- 🌍 English and Arabic
+- 💬 Checkout through WhatsApp
+- 🎬 Promo video banner and Sallatona logo
+- 🧪 Works offline with sample products if no Meta account is connected
 
-## Run it
+## Quick start
+
+You need [Node.js](https://nodejs.org) 22 or newer.
 
 ```bash
 npm install
-
-# optional: real shop config / Meta catalog
-cp server/.env.example server/.env   # edit SHOP_* and META_* as needed
-
-npm run dev        # server on :8787, web dev server on :5173 (proxies /api)
+npm run dev
 ```
 
-Production (single origin):
+Then open **http://localhost:5173**.
+
+That's it — without any settings it runs with sample products.
+
+## Connect your real catalog
+
+1. Copy the example settings file:
+
+   ```bash
+   cp .env.example server/.env
+   ```
+
+2. Open `server/.env` and fill in:
+
+   | Setting                | What to put                                         |
+   | ---------------------- | --------------------------------------------------- |
+   | `META_CATALOG_ID`      | Your catalog ID (Commerce Manager → Settings)       |
+   | `META_ACCESS_TOKEN`    | A Meta access token that can read the catalog       |
+   | `SHOP_CURRENCY`        | e.g. `MAD`, `USD`, `LBP`                            |
+   | `SYNC_SECRET`          | Any long random password                            |
+
+3. Restart with `npm run dev`. The catalog refreshes every 15 minutes.
+
+> 🔒 `server/.env` holds your secrets and is **never** uploaded to GitHub.
+
+## Change the branding
+
+Everything is in one file: [`web/src/brand.ts`](web/src/brand.ts)
+
+- `name` — shop name
+- `logoSrc` — logo image (put files in `web/public/`)
+- `heroVideo` — banner video
+- `orderWhatsapp` — the WhatsApp number that receives orders
+- Instagram, Facebook, and contact email links
+
+Colors are at the top of [`web/src/styles.css`](web/src/styles.css).
+
+## Put it online
 
 ```bash
-npm run build      # builds web/dist
-npm start --workspace=server   # serves web/dist + /api on :8787
+npm run build
+npm start --workspace=server
 ```
 
-## API
+This runs everything (website + API) on port **8787**.
 
-| Method | Path           | Notes                                                        |
-| ------ | -------------- | ----------------------------------------------------------- |
-| GET    | `/api/config`  | Shop name, currency, locale, WhatsApp number, sync status.   |
-| GET    | `/api/catalog` | `{ collections, products, syncedAt, source }`.               |
-| POST   | `/api/sync`    | Force a catalog sync. Auth: `Authorization: Bearer $SYNC_SECRET`. |
-| GET    | `/api/health`  | `{ ok: true }`.                                              |
+## Project folders
 
-## Configuration (`server/.env`)
+```
+server/   Node + Express API — syncs the Meta catalog, translates to Arabic
+web/      React website (Vite)
+  public/   logo, video, and other images
+  src/      pages, components, branding, translations
+```
 
-| Var                    | Default                | Purpose                                            |
-| ---------------------- | ---------------------- | ------------------------------------------------- |
-| `PORT`                 | `8787`                 | HTTP port.                                         |
-| `DATABASE_FILE`        | `./data/catalog.sqlite`| SQLite cache location.                             |
-| `META_CATALOG_ID`      | –                      | Meta catalog id. Blank + token blank ⇒ mock mode.  |
-| `META_ACCESS_TOKEN`    | –                      | Meta Graph API token with catalog read access.    |
-| `META_GRAPH_VERSION`   | `v21.0`                | Graph API version.                                 |
-| `SYNC_CRON`            | `*/15 * * * *`         | Catalog refresh schedule.                          |
-| `SYNC_SECRET`          | `change-me`            | Bearer secret for `POST /api/sync`.               |
-| `SHOP_NAME`            | `Kitchen Equipment`    | Storefront title.                                  |
-| `SHOP_CURRENCY`        | `USD`                  | ISO currency for price formatting.                 |
-| `SHOP_LOCALE`          | `en`                   | Locale for number/date formatting.                 |
-| `SHOP_WHATSAPP_NUMBER` | –                      | Business number, digits only, international format. |
-| `CORS_ORIGINS`         | `http://localhost:5173`| Allowed API origins (comma-separated).             |
+## Useful commands
+
+| Command         | What it does                         |
+| --------------- | ------------------------------------ |
+| `npm run dev`   | Start the site for development       |
+| `npm run build` | Build the website for production     |
+| `npm run lint`  | Check the code for type errors       |
+| `npm test`      | Run the tests                        |

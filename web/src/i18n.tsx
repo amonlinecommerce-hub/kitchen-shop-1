@@ -95,8 +95,8 @@ const UI: Record<UiKey, Record<Lang, string>> = {
   facebook: { en: "Facebook", ar: "فيسبوك" },
   support: { en: "Support on WhatsApp", ar: "الدعم عبر واتساب" },
   supportMsg: {
-    en: "Hi Onsouq, I need help.",
-    ar: "مرحبًا أونسوق، أحتاج إلى مساعدة.",
+    en: "Hi Sallatona Onsouq, I need help.",
+    ar: "مرحبًا سلّتنا أونسوق، أحتاج إلى مساعدة.",
   },
   footerRights: { en: "All rights reserved.", ar: "جميع الحقوق محفوظة." },
   searchPlaceholder: { en: "Search products…", ar: "ابحث عن منتجات…" },
